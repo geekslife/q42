@@ -6,12 +6,11 @@ from loguru import logger
 from abc import ABC, ABCMeta
 from pathlib import Path
 
-CUR_DIR = Path(__file__).resolve().parent
-sys.path.append(str(CUR_DIR.parent.parent))
+from q42.scripts.data_collector.futures import get_symbols
+from q42.scripts.data_collector.base import BaseCollector, BaseNormalize, BaseRun
+from q42.scripts.helper import futures_klines, ts2dt
 
-from data_collector.futures import get_symbols
-from helper import futures_klines, ts2dt
-from data_collector.base import BaseCollector, BaseNormalize, BaseRun
+CUR_DIR = Path(__file__).resolve().parent
 
 
 class BinanceCollector(BaseCollector):
