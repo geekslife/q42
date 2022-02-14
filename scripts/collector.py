@@ -10,9 +10,9 @@ from pathlib import Path
 CUR_DIR = Path(__file__).resolve().parent
 sys.path.append(CUR_DIR)
 
-from data_collector.futures import get_symbols
-from data_collector.base import BaseCollector, BaseNormalize, BaseRun
-from helper import futures_klines, ts2dt
+from .data_collector.futures import get_symbols
+from .data_collector.base import BaseCollector, BaseNormalize, BaseRun
+from .helper import futures_klines, ts2dt
 
 
 class BinanceCollector(BaseCollector):
