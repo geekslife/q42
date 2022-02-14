@@ -87,6 +87,8 @@ class Main:
                 for m in range(60):
                     os.makedirs(f'{target_dir}/{h:02}{m:02}', exist_ok=True)
                     path = expanduser(f'{target_dir}/{h:02}{m:02}/{filename}')
+                    if os.path.exists(path):
+                        continue
                     sub_df = df.iloc[(hour == h) & (minute == m)].reset_index()
                     sub_df.dropna().to_csv(
                         path,
@@ -94,8 +96,6 @@ class Main:
                         date_format='%Y-%m-%d',
                         columns=['date', 'open', 'high', 'low', 'close', 'volume']
                     )
-                    break
-                break
 
     @staticmethod
     def min2day_update(source_dir, qlib_dir):
