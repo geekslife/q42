@@ -64,7 +64,7 @@ class BinanceCollector(BaseCollector):
     def get_instrument_list(self):
         logger.info("get crypto symbols......")
         symbols = get_symbols()
-        symbols = list(filter(lambda x : x > 'IMXUSDT.csv', symbols)) # XXX
+        #symbols = list(filter(lambda x : x > 'IMXUSDT.csv', symbols)) # XXX
         logger.info(f"get {len(symbols)} symbols.")
         return symbols
 

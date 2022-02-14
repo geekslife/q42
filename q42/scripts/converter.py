@@ -74,13 +74,6 @@ class Main:
 
         for i, path in enumerate(gl):
             filename = path.split('/')[-1]
-            lines = open(path).readlines()
-            sdt = lines[1].split()[0]
-            edt = lines[-1].split()[0]
-            dates_by_filename[filename] = (sdt, edt)
-
-        for i, path in enumerate(gl):
-            filename = path.split('/')[-1]
             print(f'processing {filename} ({i + 1}/{len(gl)})')
 
             df = pd.read_csv(path, index_col=['date'], parse_dates=True)
@@ -95,12 +88,14 @@ class Main:
                     os.makedirs(f'{target_dir}/{h:02}{m:02}', exist_ok=True)
                     path = expanduser(f'{target_dir}/{h:02}{m:02}/{filename}')
                     sub_df = df.iloc[(hour == h) & (minute == m)].reset_index()
-                    pad_dataframe(sub_df, sdt, edt).to_csv(
+                    sub_df.dropna().to_csv(
                         path,
                         index=False, \
                         date_format='%Y-%m-%d',
                         columns=['date', 'open', 'high', 'low', 'close', 'volume']
                     )
+                    break
+                break
 
     @staticmethod
     def min2day_update(source_dir, qlib_dir):
