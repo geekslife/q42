@@ -8,7 +8,6 @@ from pathlib import Path
 
 
 CUR_DIR = Path(__file__).resolve().parent
-sys.path.append(CUR_DIR)
 
 from q42.scripts.data_collector.futures import get_symbols
 from q42.scripts.data_collector.base import BaseCollector, BaseNormalize, BaseRun
