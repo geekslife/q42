@@ -2,3 +2,4 @@ pyqlib
 requests
 fire
 pytz
+loguru

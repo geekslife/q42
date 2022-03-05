@@ -42,6 +42,7 @@ class BaseCollector(abc.ABC):
         delay=0,
         check_data_length: int = None,
         limit_nums: int = None,
+        market: str = None
     ):
         """
 
@@ -79,6 +80,7 @@ class BaseCollector(abc.ABC):
         self.start_datetime = self.normalize_start_datetime(start)
         self.end_datetime = self.normalize_end_datetime(end)
 
+        self.market = market
         self.instrument_list = sorted(set(self.get_instrument_list()))
 
         if limit_nums is not None:
@@ -308,7 +310,7 @@ class Normalize:
 
 
 class BaseRun(abc.ABC):
-    def __init__(self, source_dir=None, normalize_dir=None, max_workers=1, interval="1d"):
+    def __init__(self, source_dir=None, normalize_dir=None, max_workers=1, interval="1d", market='futures'):
         """
 
         Parameters
@@ -332,9 +334,10 @@ class BaseRun(abc.ABC):
         self.normalize_dir = Path(normalize_dir).expanduser().resolve()
         self.normalize_dir.mkdir(parents=True, exist_ok=True)
 
-        self._cur_module = importlib.import_module("collector")
+        self._cur_module = importlib.import_module("q42.scripts.collector")
         self.max_workers = max_workers
         self.interval = interval
+        self.market = market
 
     @property
     @abc.abstractmethod
@@ -399,6 +402,7 @@ class BaseRun(abc.ABC):
             interval=interval,
             check_data_length=check_data_length,
             limit_nums=limit_nums,
+            market=self.market,
         ).collector_data()
 
     def normalize_data(self, date_field_name: str = "date", symbol_field_name: str = "symbol", **kwargs):

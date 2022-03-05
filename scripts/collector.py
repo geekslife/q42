@@ -1,5 +1,4 @@
 import fire
-import sys
 import pandas as pd
 
 from loguru import logger
@@ -9,9 +8,10 @@ from pathlib import Path
 
 CUR_DIR = Path(__file__).resolve().parent
 
-from q42.scripts.data_collector.futures import get_symbols
-from q42.scripts.data_collector.base import BaseCollector, BaseNormalize, BaseRun
-from q42.scripts.helper import futures_klines, ts2dt
+from q42.data.collector import futures
+from q42.data.collector import spot
+from q42.data.collector.base import BaseCollector, BaseNormalize, BaseRun
+from q42.scripts.helper import futures_klines, spot_klines, ts2dt
 
 
 class BinanceCollector(BaseCollector):
@@ -26,6 +26,7 @@ class BinanceCollector(BaseCollector):
             delay=1,  # delay need to be one
             check_data_length: int = None,
             limit_nums: int = None,
+            market: str = None
     ):
         """
 
@@ -49,6 +50,8 @@ class BinanceCollector(BaseCollector):
             check data length, if not None and greater than 0, each symbol will be considered complete if its data length is greater than or equal to this value, otherwise it will be fetched again, the maximum number of fetches being (max_collector_count). By default None.
         limit_nums: int
             using for debug, by default None
+        market: str
+            futures or spot
         """
         super(BinanceCollector, self).__init__(
             save_dir=save_dir,
@@ -60,22 +63,29 @@ class BinanceCollector(BaseCollector):
             delay=delay,
             check_data_length=check_data_length,
             limit_nums=limit_nums,
+            market=market
         )
 
     def get_instrument_list(self):
         logger.info("get crypto symbols......")
-        symbols = get_symbols()
+        if self.market == 'futures':
+            symbols = futures.get_symbols()
+        else:
+            symbols = spot.get_symbols()
         #symbols = list(filter(lambda x : x > 'IMXUSDT.csv', symbols)) # XXX
         logger.info(f"get {len(symbols)} symbols.")
         return symbols
 
     @staticmethod
-    def get_data_from_remote(symbol, interval, start, end):
+    def get_data_from_remote(symbol, interval, start, end, market):
         error_msg = f"{symbol}-{interval}-{start}-{end}"
         names = ['date', 'open', 'high', 'low', 'close', 'volume']
         datefmt = '%Y-%m-%d' if interval == '1d' else '%Y-%m-%d %H:%M:%S'
         try:
-            data = list(futures_klines(symbol, startTime=start, endTime=end, interval=interval))
+            if market == 'spot':
+                data = list(spot_klines(symbol, startTime=start, endTime=end, interval=interval))
+            else:
+                data = list(futures_klines(symbol, startTime=start, endTime=end, interval=interval))
             df = pd.DataFrame(data, dtype=str)
             df = df.drop(df.columns[len(names):], axis=1)
             df.columns = names
@@ -95,6 +105,7 @@ class BinanceCollector(BaseCollector):
                 interval=_remote_interval,
                 start=start_,
                 end=end_,
+                market=self.market
             )
 
         if interval in (self.INTERVAL_1d, self.INTERVAL_1h, self.INTERVAL_1min):
@@ -171,8 +182,8 @@ class BinanceNormalize1min(BinanceNormalize, metaclass=ABCMeta):
 
 
 class Run(BaseRun):
-    def __init__(self, source_dir=None, normalize_dir=None, max_workers=1, interval="1d"):
-        super().__init__(source_dir, normalize_dir, max_workers, interval)
+    def __init__(self, source_dir=None, normalize_dir=None, max_workers=1, interval="1d", market='futures'):
+        super().__init__(source_dir, normalize_dir, max_workers, interval, market)
 
     @property
     def collector_class_name(self):
